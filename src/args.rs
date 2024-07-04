@@ -12,6 +12,8 @@ pub struct TopLevelInspection {
 pub enum InspectionCommand {
   InIp(InspectForIp),
   CopyFile(InspectForCopyFile),
+  ShowMemory(InspectForMemory),
+  ShowProcesses(InspectForProcesses),
 }
 
 /// command for inspecting IP addresses.
@@ -31,3 +33,13 @@ pub struct InspectForCopyFile {
   #[argh(positional)]
   pub file: String,
 }
+
+/// command for showing memory.
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "mem")]
+pub struct InspectForMemory {}
+
+/// command for displaying processes
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "ps")]
+pub struct InspectForProcesses {}
