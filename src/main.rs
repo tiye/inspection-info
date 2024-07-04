@@ -67,5 +67,11 @@ fn main() {
         // println!("    {}", process.cmd().join(" "));
       }
     }
+    ShowWorkingDirectory(_) => {
+      let cwd = std::env::current_dir().expect("get current working directory");
+      let dir = cwd.display().to_string();
+      cli_clipboard::set_contents(dir.to_owned()).expect("write to clipboard");
+      println!("{}\t\t(copied to clipboard)", dir);
+    }
   }
 }

@@ -14,6 +14,7 @@ pub enum InspectionCommand {
   CopyFile(InspectForCopyFile),
   ShowMemory(InspectForMemory),
   ShowProcesses(InspectForProcesses),
+  ShowWorkingDirectory(InspectForWorkingDirectory),
 }
 
 /// command for inspecting IP addresses.
@@ -43,3 +44,8 @@ pub struct InspectForMemory {}
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "ps")]
 pub struct InspectForProcesses {}
+
+/// command for displaying working directory
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "wd")]
+pub struct InspectForWorkingDirectory {}
