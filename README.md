@@ -21,9 +21,16 @@ lo0:	fe80::1
 en0:	192.168.35.141
 ```
 
+#####
+
+```bash
+in cpfile Cargo.toml
+Copiled 192 characters to clipboard
+```
+
 ### More docs
 
-```
+```bash
 in help
 Usage: in <command> [<args>]
 
@@ -34,6 +41,7 @@ Options:
 
 Commands:
   ip                command for inspecting IP addresses.
+  cpfile            command for copying files.
 ```
 
 ### License

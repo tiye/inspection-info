@@ -11,6 +11,7 @@ pub struct TopLevelInspection {
 #[argh(subcommand)]
 pub enum InspectionCommand {
   InIp(InspectForIp),
+  CopyFile(InspectForCopyFile),
 }
 
 /// command for inspecting IP addresses.
@@ -20,4 +21,13 @@ pub struct InspectForIp {
   #[argh(switch, short = 'd')]
   /// switch on verbose mode.
   pub detailed: bool,
+}
+
+/// command for copying files.
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "cpfile")]
+pub struct InspectForCopyFile {
+  /// source file
+  #[argh(positional)]
+  pub file: String,
 }
