@@ -15,6 +15,7 @@ pub enum InspectionCommand {
   ShowMemory(InspectForMemory),
   ShowProcesses(InspectForProcesses),
   ShowWorkingDirectory(InspectForWorkingDirectory),
+  ListFileSize(InspectForFileSize),
 }
 
 /// command for inspecting IP addresses.
@@ -49,3 +50,18 @@ pub struct InspectForProcesses {}
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "wd")]
 pub struct InspectForWorkingDirectory {}
+
+/// command for displaying file size
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "large")]
+pub struct InspectForFileSize {
+  /// minimum size
+  #[argh(option, default = "String::from(\"1m\")")]
+  pub min: String,
+  /// base path
+  #[argh(positional, default = "String::from(\".\")")]
+  pub base: String,
+  /// show sorted result
+  #[argh(switch, short = 's')]
+  pub sort: bool,
+}
