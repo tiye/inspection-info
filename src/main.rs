@@ -1,4 +1,5 @@
 mod args;
+mod show_file_size;
 
 use sysinfo::System;
 
@@ -8,7 +9,7 @@ use cli_clipboard;
 use args::{InspectionCommand, TopLevelInspection};
 use local_ip_address::{list_afinet_netifas, local_ip};
 
-fn main() {
+fn main() -> Result<(), String> {
   let command: TopLevelInspection = argh::from_env();
 
   use InspectionCommand::*;
@@ -73,5 +74,10 @@ fn main() {
       cli_clipboard::set_contents(dir.to_owned()).expect("write to clipboard");
       println!("{}\t\t(copied to clipboard)", dir);
     }
+    ListFileSize(options) => {
+      show_file_size::show_file_size(options)?;
+    }
   }
+
+  Ok(())
 }

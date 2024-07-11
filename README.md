@@ -6,6 +6,10 @@
 
 Install it with cargo install git source.
 
+```bash
+in help
+```
+
 ##### IP address
 
 ```bash
@@ -21,27 +25,21 @@ lo0:	fe80::1
 en0:	192.168.35.141
 ```
 
-#####
+##### Copy file to clipboard
 
 ```bash
 in cpfile Cargo.toml
 Copiled 192 characters to clipboard
 ```
 
-### More docs
+### List largest files
 
 ```bash
-in help
-Usage: in <command> [<args>]
-
-Top-level command.
-
-Options:
-  --help            display usage information
-
-Commands:
-  ip                command for inspecting IP addresses.
-  cpfile            command for copying files.
+in large --min 1k --sort
+5.6 MB ./target/release/deps/libserde-3f58fa041f951e55.rmeta
+5.6 MB ./target/release/deps/libserde-8238757ab41c1ecb.rmeta
+5.7 MB ./target/release/deps/libserde-3f58fa041f951e55.rlib
+5.7 MB ./target/release/deps/libserde-8238757ab41c1ecb.rlib
 ```
 
 ### License
