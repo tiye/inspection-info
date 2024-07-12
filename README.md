@@ -60,14 +60,13 @@ in dir rm demo # unlink it
 Since every shell only allow `cd <dir>` from functions, you need to add extra code to you `.bashrc` or `.zshrc`:
 
 ```bash
-function gg {
-  eval "in dir jump $1"
-  local target=/tmp/inspection-bashmarks-jump-target
-  if test -f $target; then
-    cd "$(cat $target)"
-    ls -pG
-  fi
-}
+in dir gg >> ~/.zshrc
+```
+
+or eval function directly:
+
+```bash
+eval "$(in dir gg)"
 ```
 
 then jump to `demo` with:

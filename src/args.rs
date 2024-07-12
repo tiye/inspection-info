@@ -82,6 +82,8 @@ pub enum DirMarkCommand {
   Remove(InspectForDirMarkRemove),
   Search(InspectForDirMarkSearch),
   Jump(InspectForDirMarkJump),
+  Lookup(InspectForDirMarkLookup),
+  ShellFn(InspectForDirMarkShellFn),
 }
 
 /// command for adding a directory mark
@@ -125,3 +127,17 @@ pub struct InspectForDirMarkJump {
   #[argh(positional)]
   pub kwd: String,
 }
+
+/// command for looking up a directory mark
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "lookup")]
+pub struct InspectForDirMarkLookup {
+  /// keyword
+  #[argh(positional)]
+  pub kwd: String,
+}
+
+/// command for shell function
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "gg")]
+pub struct InspectForDirMarkShellFn {}

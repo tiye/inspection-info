@@ -4,6 +4,7 @@
 
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Write};
+use std::process::exit;
 
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
@@ -11,10 +12,12 @@ use serde::{Deserialize, Serialize};
 /// the file that stores the marks
 const MARKS_CONFIG_FILE: &str = "~/.inspection-bashmarks.json";
 
+const SHELL_FN_GG: &str = include_str!("dir_mark_gg.sh");
+
 fn expand_home_dir(path: &str) -> String {
   let home = std::env::var("HOME").expect("get home dir");
   if path.starts_with('~') {
-    path.replacen("~", &home, 1)
+    path.replacen('~', &home, 1)
   } else {
     path.to_owned()
   }
@@ -72,15 +75,24 @@ impl DirMarks {
   pub fn add(&mut self, kwd: String, path: &str, description: String) {
     let target = self.marks.iter_mut().find(|m| m.kwd == kwd);
     if let Some(target) = target {
-      target.path = path.to_owned();
-      target.description = description;
+      path.clone_into(&mut target.path);
+      description.clone_into(&mut target.description);
     } else {
-      self.marks.push(Bookmark::new(kwd, path.to_owned(), description));
+      self
+        .marks
+        .push(Bookmark::new(kwd.to_owned(), path.to_owned(), description.to_owned()));
     }
+    println!("added `{}`\t{}\t{}", kwd, path, description)
   }
 
   pub fn remove(&mut self, kwd: &str) {
-    self.marks.retain(|m| m.kwd != kwd);
+    let target = self.marks.iter().find(|m| m.kwd == kwd);
+    if let Some(target) = target {
+      println!("removed `{}`\t{}\t{}", target.kwd, target.path, target.description);
+      self.marks.retain(|m| m.kwd != kwd);
+    } else {
+      println!("`{}` not found", kwd);
+    }
   }
 
   pub fn remove_by_path(&mut self, path: &str) {
@@ -91,7 +103,7 @@ impl DirMarks {
   pub fn jump(&mut self, kwd: &str) -> Result<(), String> {
     // remove file in `JUMP_TARGET_DATA_PATH`` first
     if std::path::Path::new(JUMP_TARGET_DATA_PATH).exists() {
-      let _ = std::fs::remove_file(JUMP_TARGET_DATA_PATH).map_err(|e| format!("failed to remove {}", e))?;
+      std::fs::remove_file(JUMP_TARGET_DATA_PATH).map_err(|e| format!("failed to remove {}", e))?;
     }
 
     let marks = self.marks.to_owned();
@@ -121,8 +133,35 @@ impl DirMarks {
     }
   }
 
+  /// lookup keyword, if found, print path to stdout, otherwise exit with error
+  pub fn lookup(&mut self, kwd: &str) -> Result<(), String> {
+    let marks = self.marks.to_owned();
+    let target = self.marks.iter_mut().find(|m| m.kwd == kwd);
+    if let Some(target) = target {
+      target.jump_times += 1;
+      let file = File::create(JUMP_TARGET_DATA_PATH).expect("create file");
+      let mut writer = BufWriter::new(file);
+      writer.write_all(target.path.as_bytes()).expect("write to file");
+      print!("{}", target.path);
+      Ok(())
+    } else {
+      eprintln!("possible matches:");
+      let mut found = false;
+      for mark in &marks {
+        if mark.kwd.contains(kwd) || mark.description.contains(kwd) {
+          eprintln!("{}: {}\t{}", mark.kwd, mark.path, mark.description);
+          found = true;
+        }
+      }
+      if !found {
+        eprintln!("No match found");
+      }
+      exit(1); // exit with error
+    }
+  }
+
   /// list all marks
-  pub fn list_all(&self, query: Option<&str>) {
+  pub fn list(&self, query: Option<&str>) {
     if self.marks.is_empty() {
       println!("No marks found");
       return;
@@ -141,7 +180,12 @@ impl DirMarks {
         }
       }
 
-      println!("{}: {}\t{}", mark.kwd, path, mark.description);
+      println!("{}\t{}\t{}", mark.kwd, path, mark.description);
     }
+  }
+
+  /// print shell function for zsh
+  pub fn shell_fn() {
+    println!("{}", SHELL_FN_GG);
   }
 }

@@ -5,7 +5,6 @@ mod show_file_size;
 use sysinfo::System;
 
 use bytesize::ByteSize;
-use cli_clipboard;
 
 use args::{DirMarkCommand, InspectionCommand, TopLevelInspection};
 use local_ip_address::{list_afinet_netifas, local_ip};
@@ -65,7 +64,7 @@ fn main() -> Result<(), String> {
         if let Some(v) = process.user_id() {
           print!("\t{:?}", v);
         }
-        print!("\n");
+        println!();
         // println!("    {}", process.cmd().join(" "));
       }
     }
@@ -98,11 +97,18 @@ fn main() -> Result<(), String> {
       }
       DirMarkCommand::Search(options) => {
         let marks = dir_marks::DirMarks::load().expect("load marks");
-        marks.list_all(options.query.as_deref());
+        marks.list(options.query.as_deref());
       }
       DirMarkCommand::Jump(options) => {
         let mut marks = dir_marks::DirMarks::load().expect("load marks");
         marks.jump(&options.kwd)?;
+      }
+      DirMarkCommand::Lookup(options) => {
+        let mut marks = dir_marks::DirMarks::load().expect("load marks");
+        marks.lookup(&options.kwd)?;
+      }
+      DirMarkCommand::ShellFn(_) => {
+        dir_marks::DirMarks::shell_fn();
       }
     },
   }
