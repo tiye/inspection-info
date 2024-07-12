@@ -55,6 +55,7 @@ in dir add demo # add a bookmark "demo" of current directory
 in dir jump demo # jump to it
 in dir ls # show all bookmarks
 in dir rm demo # unlink it
+code $(in dir lookup demo) # open it in vscode
 ```
 
 Since every shell only allow `cd <dir>` from functions, you need to add extra code to you `.bashrc` or `.zshrc`:
