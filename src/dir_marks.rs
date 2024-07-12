@@ -1,0 +1,143 @@
+//! implement something like bashmarks in Rust
+//! plus, each bookmark has a description, and prints in better format.
+//! the return path is stored in a temp file, so that zsh can jump to the target.
+
+use std::fs::File;
+use std::io::{BufReader, BufWriter, Write};
+
+use serde::{Deserialize, Serialize};
+
+/// the file that stores the marks
+const MARKS_CONFIG_FILE: &str = "~/.inspection-bashmarks.json";
+
+fn expand_home_dir(path: &str) -> String {
+  let home = std::env::var("HOME").expect("get home dir");
+  if path.starts_with('~') {
+    path.replacen("~", &home, 1)
+  } else {
+    path.to_owned()
+  }
+}
+
+/// tell zsh to jump to the target
+const JUMP_TARGET_DATA_PATH: &str = "/tmp/inspection-bashmarks-jump-target";
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct DirMarks {
+  pub marks: Vec<Bookmark>,
+}
+
+#[derive(Debug, Serialize, Deserialize, Default, Clone)]
+pub struct Bookmark {
+  pub kwd: String,
+  pub path: String,
+  pub description: String,
+  pub jump_times: u64,
+}
+
+impl Bookmark {
+  pub fn new(kwd: String, path: String, description: String) -> Self {
+    Self {
+      kwd,
+      path,
+      description,
+      jump_times: 0,
+    }
+  }
+}
+
+impl DirMarks {
+  /// load config from file
+  pub fn load() -> Result<Self, String> {
+    // check file exists first
+    if !std::path::Path::new(&expand_home_dir(MARKS_CONFIG_FILE)).exists() {
+      return Ok(Self { marks: Vec::new() });
+    }
+    let file = File::open(expand_home_dir(MARKS_CONFIG_FILE)).map_err(|e| e.to_string())?;
+    let reader = BufReader::new(file);
+    let marks: Vec<Bookmark> = serde_json::from_reader(reader).map_err(|e| e.to_string())?;
+    Ok(Self { marks })
+  }
+
+  pub fn save_and_write(&self) -> Result<(), String> {
+    let config_file = expand_home_dir(MARKS_CONFIG_FILE);
+    let file = File::create(config_file).expect("create config file to write");
+    let writer = BufWriter::new(file);
+    serde_json::to_writer(writer, &self.marks).expect("write json");
+    Ok(())
+  }
+
+  /// if path already exists, update it, or add a new one
+  pub fn add(&mut self, kwd: String, path: &str, description: String) {
+    let target = self.marks.iter_mut().find(|m| m.kwd == kwd);
+    if let Some(target) = target {
+      target.path = path.to_owned();
+      target.description = description;
+    } else {
+      self.marks.push(Bookmark::new(kwd, path.to_owned(), description));
+    }
+  }
+
+  pub fn remove(&mut self, kwd: &str) {
+    self.marks.retain(|m| m.kwd != kwd);
+  }
+
+  pub fn remove_by_path(&mut self, path: &str) {
+    self.marks.retain(|m| m.path != path);
+  }
+
+  /// try jump, if not found, list possible matches
+  pub fn jump(&mut self, kwd: &str) -> Result<(), String> {
+    // remove file in `JUMP_TARGET_DATA_PATH`` first
+    let _ = std::fs::remove_file(JUMP_TARGET_DATA_PATH).map_err(|e| e.to_string())?;
+
+    let marks = self.marks.to_owned();
+    let target = self.marks.iter_mut().find(|m| m.kwd == kwd);
+    if let Some(target) = target {
+      target.jump_times += 1;
+      let file = File::create(JUMP_TARGET_DATA_PATH).expect("create file");
+      let mut writer = BufWriter::new(file);
+      writer.write_all(target.path.as_bytes()).expect("write to file");
+      Ok(())
+    } else {
+      println!("possible matches:");
+      let mut found = false;
+      for mark in &marks {
+        if mark.kwd.contains(kwd) || mark.description.contains(kwd) {
+          println!("{}: {}\t{}", mark.kwd, mark.path, mark.description);
+          found = true;
+        }
+      }
+      if found {
+        Ok(())
+      } else {
+        println!("No match found");
+        Ok(())
+      }
+    }
+  }
+
+  /// list all marks
+  pub fn list_all(&self, query: Option<&str>) {
+    if self.marks.is_empty() {
+      println!("No marks found");
+      return;
+    }
+    for mark in &self.marks {
+      let mut path = mark.path.clone();
+      // replace home dir with ~
+      let home = std::env::var("HOME").expect("get home dir");
+      if path.starts_with(&home) {
+        path = path.replacen(&home, "~", 1);
+      }
+
+      if let Some(query) = query {
+        if !mark.kwd.contains(query) && !mark.description.contains(query) {
+          continue;
+        }
+      }
+
+      println!("{}: {}\t{}", mark.kwd, path, mark.description);
+    }
+  }
+}

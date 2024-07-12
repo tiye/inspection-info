@@ -1,4 +1,5 @@
 mod args;
+mod dir_marks;
 mod show_file_size;
 
 use sysinfo::System;
@@ -6,7 +7,7 @@ use sysinfo::System;
 use bytesize::ByteSize;
 use cli_clipboard;
 
-use args::{InspectionCommand, TopLevelInspection};
+use args::{DirMarkCommand, InspectionCommand, TopLevelInspection};
 use local_ip_address::{list_afinet_netifas, local_ip};
 
 fn main() -> Result<(), String> {
@@ -77,6 +78,33 @@ fn main() -> Result<(), String> {
     ListFileSize(options) => {
       show_file_size::show_file_size(options)?;
     }
+
+    DirMark(options) => match options.subcommand {
+      DirMarkCommand::Add(options) => {
+        let wd = std::env::current_dir().map_err(|e| e.to_string())?;
+        let path = wd.to_str().expect("convert to string");
+        let mut marks = dir_marks::DirMarks::load().expect("load marks");
+        marks.add(options.kwd, path, options.desc.unwrap_or_default());
+        marks.save_and_write()?;
+      }
+      DirMarkCommand::Remove(options) => {
+        let mut marks = dir_marks::DirMarks::load().expect("load marks");
+        if options.by_path {
+          marks.remove_by_path(&options.kwd);
+        } else {
+          marks.remove(&options.kwd);
+        }
+        marks.save_and_write()?;
+      }
+      DirMarkCommand::Search(options) => {
+        let marks = dir_marks::DirMarks::load().expect("load marks");
+        marks.list_all(options.query.as_deref());
+      }
+      DirMarkCommand::Jump(options) => {
+        let mut marks = dir_marks::DirMarks::load().expect("load marks");
+        marks.jump(&options.kwd)?;
+      }
+    },
   }
 
   Ok(())
