@@ -5,6 +5,7 @@
 use std::fs::File;
 use std::io::{BufReader, BufWriter, Write};
 
+use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
 /// the file that stores the marks
@@ -89,7 +90,9 @@ impl DirMarks {
   /// try jump, if not found, list possible matches
   pub fn jump(&mut self, kwd: &str) -> Result<(), String> {
     // remove file in `JUMP_TARGET_DATA_PATH`` first
-    let _ = std::fs::remove_file(JUMP_TARGET_DATA_PATH).map_err(|e| e.to_string())?;
+    if std::path::Path::new(JUMP_TARGET_DATA_PATH).exists() {
+      let _ = std::fs::remove_file(JUMP_TARGET_DATA_PATH).map_err(|e| format!("failed to remove {}", e))?;
+    }
 
     let marks = self.marks.to_owned();
     let target = self.marks.iter_mut().find(|m| m.kwd == kwd);
@@ -98,6 +101,7 @@ impl DirMarks {
       let file = File::create(JUMP_TARGET_DATA_PATH).expect("create file");
       let mut writer = BufWriter::new(file);
       writer.write_all(target.path.as_bytes()).expect("write to file");
+      println!("{}", format!("cd {}\n", target.path).dimmed());
       Ok(())
     } else {
       println!("possible matches:");

@@ -42,6 +42,27 @@ in large --min 1k --sort
 5.7 MB ./target/release/deps/libserde-8238757ab41c1ecb.rlib
 ```
 
+### Dir mark
+
+```bash
+in dir add demo
+in dir jump demo
+in dir ls
+```
+
+Helper function `ig` for jump:
+
+```bash
+function gg {
+  eval "in dir jump $1"
+  local target=/tmp/inspection-bashmarks-jump-target
+  if test -f $target; then
+    cd "$(cat $target)"
+    ls -pG
+  fi
+}
+```
+
 ### License
 
 MIT
