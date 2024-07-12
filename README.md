@@ -2,6 +2,12 @@
 
 > a bunch of commands for dev informations.
 
+Install by cloning the demo and run:
+
+```bash
+cargo install --path .
+```
+
 ### Usages
 
 Install it with cargo install git source.
@@ -45,12 +51,13 @@ in large --min 1k --sort
 ### Dir mark
 
 ```bash
-in dir add demo
-in dir jump demo
-in dir ls
+in dir add demo # add a bookmark "demo" of current directory
+in dir jump demo # jump to it
+in dir ls # show all bookmarks
+in dir rm demo # unlink it
 ```
 
-Helper function `ig` for jump:
+Since every shell only allow `cd <dir>` from functions, you need to add extra code to you `.bashrc` or `.zshrc`:
 
 ```bash
 function gg {
@@ -61,6 +68,12 @@ function gg {
     ls -pG
   fi
 }
+```
+
+then jump to `demo` with:
+
+```bash
+gg demo
 ```
 
 ### License
