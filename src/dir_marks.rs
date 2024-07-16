@@ -114,6 +114,7 @@ impl DirMarks {
       let mut writer = BufWriter::new(file);
       writer.write_all(target.path.as_bytes()).expect("write to file");
       println!("{}", format!("cd {}\n", target.path).dimmed());
+      self.save_and_write()?;
       Ok(())
     } else {
       println!("possible matches:");
@@ -180,7 +181,7 @@ impl DirMarks {
         }
       }
 
-      println!("{}\t{}\t{}", mark.kwd, path, mark.description);
+      println!("{:<12}\t{:<36}\t{:<4}\t{:<12}", mark.kwd, path, mark.jump_times, mark.description);
     }
   }
 
