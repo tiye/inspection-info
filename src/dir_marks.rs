@@ -106,6 +106,7 @@ impl DirMarks {
       std::fs::remove_file(JUMP_TARGET_DATA_PATH).map_err(|e| format!("failed to remove {}", e))?;
     }
 
+    // match by exact keyword
     let marks = self.marks.to_owned();
     let target = self.marks.iter_mut().find(|m| m.kwd == kwd);
     if let Some(target) = target {
@@ -115,22 +116,46 @@ impl DirMarks {
       writer.write_all(target.path.as_bytes()).expect("write to file");
       println!("{}", format!("cd {}\n", target.path).dimmed());
       self.save_and_write()?;
+      return Ok(());
+    }
+
+    // match by **unique** prefix
+    let mut target = None;
+    let mut count_prefix: u32 = 0;
+    for mark in &marks {
+      if mark.kwd.starts_with(kwd) {
+        count_prefix += 1;
+        target = Some(mark);
+      }
+    }
+    if count_prefix == 1 {
+      let target = target.unwrap();
+      let file = File::create(JUMP_TARGET_DATA_PATH).expect("create file");
+      let mut writer = BufWriter::new(file);
+      writer.write_all(target.path.as_bytes()).expect("write to file");
+      println!("{}", format!("cd {} (by prefix)\n", target.path).dimmed());
+      self.save_and_write()?;
+      return Ok(());
+    }
+
+    println!("{}", "possible matches:\n".dimmed());
+    let mut found = false;
+    for mark in &marks {
+      if mark.kwd.contains(kwd) || mark.description.contains(kwd) {
+        println!(
+          "{:<12} {:<48} {:<24}",
+          mark.kwd.dimmed(),
+          mark.path.dimmed(),
+          mark.description.dimmed()
+        );
+        found = true;
+      }
+    }
+    if found {
       Ok(())
     } else {
-      println!("possible matches:");
-      let mut found = false;
-      for mark in &marks {
-        if mark.kwd.contains(kwd) || mark.description.contains(kwd) {
-          println!("{}: {}\t{}", mark.kwd, mark.path, mark.description);
-          found = true;
-        }
-      }
-      if found {
-        Ok(())
-      } else {
-        println!("No match found");
-        Ok(())
-      }
+      eprintln!("{}", "No match found".red());
+      Ok(())
     }
   }
 
@@ -146,16 +171,21 @@ impl DirMarks {
       print!("{}", target.path);
       Ok(())
     } else {
-      eprintln!("possible matches:");
+      eprintln!("{}", "possible matches:\n".dimmed());
       let mut found = false;
       for mark in &marks {
         if mark.kwd.contains(kwd) || mark.description.contains(kwd) {
-          eprintln!("{}: {}\t{}", mark.kwd, mark.path, mark.description);
+          println!(
+            "{:<12} {:<48} {:<24}",
+            mark.kwd.dimmed(),
+            mark.path.dimmed(),
+            mark.description.dimmed()
+          );
           found = true;
         }
       }
       if !found {
-        eprintln!("No match found");
+        eprintln!("{}", "No match found".red());
       }
       exit(1); // exit with error
     }
