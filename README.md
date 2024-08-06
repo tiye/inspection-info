@@ -2,6 +2,12 @@
 
 > a bunch of commands for dev informations.
 
+Install by cloning the demo and run:
+
+```bash
+cargo install --path .
+```
+
 ### Usages
 
 Install it with cargo install git source.
@@ -40,6 +46,34 @@ in large --min 1k --sort
 5.6 MB ./target/release/deps/libserde-8238757ab41c1ecb.rmeta
 5.7 MB ./target/release/deps/libserde-3f58fa041f951e55.rlib
 5.7 MB ./target/release/deps/libserde-8238757ab41c1ecb.rlib
+```
+
+### Dir mark
+
+```bash
+in dir add demo # add a bookmark "demo" of current directory
+in dir jump demo # jump to it
+in dir ls # show all bookmarks
+in dir rm demo # unlink it
+code $(in dir lookup demo) # open it in vscode
+```
+
+Since every shell only allow `cd <dir>` from functions, you need to add extra code to you `.bashrc` or `.zshrc`:
+
+```bash
+in dir gg >> ~/.zshrc
+```
+
+or eval function directly:
+
+```bash
+eval "$(in dir gg)"
+```
+
+then jump to `demo` with:
+
+```bash
+gg demo
 ```
 
 ### License

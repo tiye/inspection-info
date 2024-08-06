@@ -5,7 +5,7 @@ use crate::args::InspectForFileSize;
 use walkdir::WalkDir;
 
 pub fn show_file_size(options: InspectForFileSize) -> Result<(), String> {
-  let min_size = parse_size(&options.min).expect(&format!("parse file size from string: {}", &options.min));
+  let min_size = parse_size(&options.min).unwrap_or_else(|_| panic!("parse file size from string: {}", &options.min));
 
   if options.sort {
     let mut file_and_size: Vec<(u64, String)> = Vec::new();

@@ -16,6 +16,7 @@ pub enum InspectionCommand {
   ShowProcesses(InspectForProcesses),
   ShowWorkingDirectory(InspectForWorkingDirectory),
   ListFileSize(InspectForFileSize),
+  DirMark(InspectForDirMark),
 }
 
 /// command for inspecting IP addresses.
@@ -65,3 +66,78 @@ pub struct InspectForFileSize {
   #[argh(switch, short = 's')]
   pub sort: bool,
 }
+
+/// command for directory marks
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "dir")]
+pub struct InspectForDirMark {
+  #[argh(subcommand)]
+  pub subcommand: DirMarkCommand,
+}
+
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand)]
+pub enum DirMarkCommand {
+  Add(InspectForDirMarkAdd),
+  Remove(InspectForDirMarkRemove),
+  Search(InspectForDirMarkSearch),
+  Jump(InspectForDirMarkJump),
+  Lookup(InspectForDirMarkLookup),
+  ShellFn(InspectForDirMarkShellFn),
+}
+
+/// command for adding a directory mark
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "add")]
+pub struct InspectForDirMarkAdd {
+  /// keyword
+  #[argh(positional)]
+  pub kwd: String,
+  /// description
+  #[argh(option)]
+  pub desc: Option<String>,
+}
+
+/// command for removing a directory mark
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "rm")]
+pub struct InspectForDirMarkRemove {
+  /// keyword
+  #[argh(positional)]
+  pub kwd: String,
+  /// remove by path
+  #[argh(switch, short = 'p')]
+  pub by_path: bool,
+}
+
+/// command for searching a directory mark
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "ls")]
+pub struct InspectForDirMarkSearch {
+  /// query
+  #[argh(positional)]
+  pub query: Option<String>,
+}
+
+/// command for jumping to a directory mark
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "jump")]
+pub struct InspectForDirMarkJump {
+  /// keyword
+  #[argh(positional)]
+  pub kwd: String,
+}
+
+/// command for looking up a directory mark
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "lookup")]
+pub struct InspectForDirMarkLookup {
+  /// keyword
+  #[argh(positional)]
+  pub kwd: String,
+}
+
+/// command for shell function
+#[derive(FromArgs, PartialEq, Debug)]
+#[argh(subcommand, name = "gg")]
+pub struct InspectForDirMarkShellFn {}
