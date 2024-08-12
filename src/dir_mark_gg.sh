@@ -1,5 +1,5 @@
 
-function gg {
+function g {
   eval "in dir jump $1"
   local target=/tmp/inspection-bashmarks-jump-target
   if test -f $target; then
@@ -7,3 +7,9 @@ function gg {
     ls -pG
   fi
 }
+
+function c(){
+  cd $1
+  ls -pG
+}
+
