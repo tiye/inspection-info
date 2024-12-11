@@ -68,21 +68,16 @@ fn main() -> Result<(), String> {
         // println!("    {}", process.cmd().join(" "));
       }
     }
-    ShowWorkingDirectory(options) => match options.relative {
-      Some(relative) => {
-        let cwd = std::env::current_dir().expect("get current working directory");
-        let dir = cwd.join(relative).canonicalize().expect("canonicalize path");
-        let dir = dir.display().to_string();
-        cli_clipboard::set_contents(dir.to_owned()).expect("write to clipboard");
-        println!("{}\t\t(copied to clipboard)", dir);
-      }
-      None => {
-        let cwd = std::env::current_dir().expect("get current working directory");
-        let dir = cwd.display().to_string();
-        cli_clipboard::set_contents(dir.to_owned()).expect("write to clipboard");
-        println!("{}\t\t(copied to clipboard)", dir);
-      }
-    },
+    ShowWorkingDirectory(options) => {
+      let cwd = std::env::current_dir().expect("get current working directory");
+      let dir = match options.relative {
+        Some(relative) => cwd.join(relative).canonicalize().expect("canonicalize path"),
+        None => cwd,
+      };
+      let dir_str = dir.display().to_string();
+      cli_clipboard::set_contents(dir_str.to_owned()).expect("write to clipboard");
+      println!("{}\t\t(copied to clipboard)", dir_str);
+    }
     ListFileSize(options) => {
       show_file_size::show_file_size(options)?;
     }
