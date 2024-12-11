@@ -57,7 +57,7 @@ fn main() -> Result<(), String> {
       sys.refresh_all();
 
       for (pid, process) in sys.processes() {
-        println!("{}\t#{pid}", process.name());
+        println!("{}\t#{pid}", process.name().to_string_lossy());
         if let Some(v) = process.cwd() {
           print!("\t{:?}", v);
         }
