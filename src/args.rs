@@ -50,7 +50,11 @@ pub struct InspectForProcesses {}
 /// command for displaying working directory
 #[derive(FromArgs, PartialEq, Debug)]
 #[argh(subcommand, name = "wd")]
-pub struct InspectForWorkingDirectory {}
+pub struct InspectForWorkingDirectory {
+  /// relative path
+  #[argh(positional)]
+  pub relative: Option<String>,
+}
 
 /// command for displaying file size
 #[derive(FromArgs, PartialEq, Debug)]

@@ -57,7 +57,7 @@ fn main() -> Result<(), String> {
       sys.refresh_all();
 
       for (pid, process) in sys.processes() {
-        println!("{}\t#{pid}", process.name());
+        println!("{}\t#{pid}", process.name().to_string_lossy());
         if let Some(v) = process.cwd() {
           print!("\t{:?}", v);
         }
@@ -68,11 +68,15 @@ fn main() -> Result<(), String> {
         // println!("    {}", process.cmd().join(" "));
       }
     }
-    ShowWorkingDirectory(_) => {
+    ShowWorkingDirectory(options) => {
       let cwd = std::env::current_dir().expect("get current working directory");
-      let dir = cwd.display().to_string();
-      cli_clipboard::set_contents(dir.to_owned()).expect("write to clipboard");
-      println!("{}\t\t(copied to clipboard)", dir);
+      let dir = match options.relative {
+        Some(relative) => cwd.join(relative).canonicalize().expect("canonicalize path"),
+        None => cwd,
+      };
+      let dir_str = dir.display().to_string();
+      cli_clipboard::set_contents(dir_str.to_owned()).expect("write to clipboard");
+      println!("{}\t\t(copied to clipboard)", dir_str);
     }
     ListFileSize(options) => {
       show_file_size::show_file_size(options)?;
