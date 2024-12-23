@@ -24,7 +24,8 @@ fn main() -> Result<(), String> {
         }
       } else {
         let my_local_ip = local_ip().unwrap();
-        println!("{}", my_local_ip);
+        cli_clipboard::set_contents(my_local_ip.to_string()).expect("write to clipboard");
+        println!("{}\t\t(copied to clipboard)", my_local_ip);
       }
     }
     CopyFile(options) => {
